@@ -7,12 +7,12 @@ function onInit() {
 
 function renderBooks() {
     var books = getBooks()
-    // var books = gBooks
+    var placeHolder = (!gFilterBy.bookName) ? "Search book.." : gFilterBy.bookName
 
     var tableStartHtmlStr = `
     <section class="status-bar">
      <button class="new-book-btn" onclick="onAddBook()">Add book</button>
-     <input class="search-Input" type="text" onkeyup="onKeyUpSearch()" placeholder="Search book..">
+     <input class="search-Input" type="text" onkeyup="onKeyUpSearch()" placeholder="${placeHolder}">
      <button class="page-btn" onclick="onPrevPage()">&#60</button><span class="page-number" >Page ${getPageNumber()}</span><button class="page-btn" onclick="onNextPage()">&#62</button>
     </section>  
 
@@ -137,13 +137,16 @@ function onRateClick(bookId, action) {
 }
 
 function onKeyUpSearch() {
-    const searchStr = document.querySelector('.search-Input').value
-    filterBy = setBooksFilter(searchStr)
-    renderBooks()
+    setTimeout(() => {
+        const searchStr = document.querySelector('.search-Input').value
+        filterBy = setBooksFilter(searchStr)
+        renderBooks()
+        document.querySelector('.search-Input').value = searchStr
 
-    const queryStringParams = `?bookName=${filterBy.bookName}`
-    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + queryStringParams
-    window.history.pushState({ path: newUrl }, '', newUrl)
+        const queryStringParams = `?bookName=${filterBy.bookName}`
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + queryStringParams
+        window.history.pushState({ path: newUrl }, '', newUrl)
+    }, 1500);
 }
 
 function renderFilterByQueryStringParams() {
@@ -151,6 +154,8 @@ function renderFilterByQueryStringParams() {
     const filterBy = { bookName: queryStringParams.get('bookName') || '' }
     if (!filterBy.bookName) return
 
-    document.querySelector('.search-Input').value = filterBy.bookName
     setBooksFilter(filterBy.bookName)
 }
+
+
+
