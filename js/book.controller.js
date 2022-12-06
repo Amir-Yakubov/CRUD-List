@@ -1,54 +1,37 @@
-'use struct'
+'use strict'
 
 function onInit() {
     renderFilterByQueryStringParams()
     renderBooks()
+    addLangBtnEvent()
 }
 
 function renderBooks() {
-    var books = getBooks()
-    var placeHolder = (!gFilterBy.bookName) ? "Search book.." : gFilterBy.bookName
+    const books = getBooks()
+    var elPageNum = document.querySelector('.page-number')
+    elPageNum.innerText = `Page ${getPageNumber()}`
 
-    var tableStartHtmlStr = `
-    <section class="status-bar">
-     <button class="new-book-btn" onclick="onAddBook()">Add book</button>
-     <input class="search-Input" type="text" onkeyup="onKeyUpSearch()" placeholder="${placeHolder}">
-     <button class="page-btn" onclick="onPrevPage()">&#60</button><span class="page-number" >Page ${getPageNumber()}</span><button class="page-btn" onclick="onNextPage()">&#62</button>
-    </section>  
+    var elSearchInput = document.querySelector('.search-Input')
+    elSearchInput.placeholder = (!gFilterBy.bookName) ? 'Search' : gFilterBy.bookName
 
-    <table class="data-table">
-    <tbody>
-        <tr class="first-row">
-         <td>Id</td>
-         <td class="title-cell">Title</td>
-         <td>Image</td>
-         <td class="sorting-cell bookprice" onclick="onSetSortBy('bookPrice')">Price<span>&#x25BC<span></td>
-         <td class="sorting-cell rate" onclick="onSetSortBy('rate')">Rate<span>&#x25BC<span></td>
-         <td class="long-row">Actions</td>
+    var strHtmls = books.map(book => {
+        const { id, bookName, bookPrice, rate } = book
+        return `<tr>
+            <td>${id}</td>
+            <td class="title-cell">${bookName}</td>
+            <td><img classs="book-img" onerror="this.src='IMG/Rand.jpg'" src="IMG/${bookName}.jpg"></td>
+            <td>$${bookPrice}</td>
+            <td>${rate}</td>
+            <td><button class="button-84" role="button" data-trans="table-btn-read" onclick="onReadBook('${id}')">Read</button>
+            <button class="button-84" role="button" data-trans="table-btn-update" onclick="onUpdateBook('${id}')">Update</button>
+            <button class="button-84" role="button" data-trans="table-btn-delete" onclick="onDeleteBook('${id}')">Delete</button></td>
         </tr>`
-
-    var strHtmls = books.map(book => `
-        <tr>
-            <td>${book.id}</td>
-            <td class="title-cell">${book.bookName}</td>
-            <td><img classs="book-img" onerror="this.src='IMG/Rand.jpg'" src="IMG/${book.bookName}.jpg"></td>
-            <td>$${book.bookPrice}</td>
-            <td>${book.rate}</td>
-            <td><button class="button-84" role="button" onclick="onReadBook('${book.id}')">Read</button>
-            <button class="button-84" role="button" onclick="onUpdateBook('${book.id}')">Update</button>
-            <button class="button-84" role="button" onclick="onDeleteBook('${book.id}')">Delete</button></td>
-        </tr>`
+    }
     )
-
-    var tableEndHtmlStr = `</tbody></table>`
-
-    var hendleStr = strHtmls.join('')
-    var totalStr = `${tableStartHtmlStr}${hendleStr}${tableEndHtmlStr}`
-    document.querySelector('.books-container').innerHTML = totalStr
-}
-
-function onReadBook() {
-
+    var strHtml = strHtmls.join('')
+    strHtml += `</tbody></table>`
+    document.querySelector('.table-body').innerHTML = strHtml
+    doTrans()
 }
 
 function onUpdateBook(bookId) {
@@ -79,7 +62,7 @@ function onReadBook(bookId) {
     var elModal = document.querySelector('.modal')
 
     elModal.querySelector('.rate-box').innerHTML = `
-    <span>rate</span>
+    <span data-trans="modal-rate">rate</span>
     <button class="rate-btn plus" onclick="onRateClick('${bookId}', 'plus')">+</button>
     <a class="curr-rating">${book.rate}</a>
     <button class="rate-btn minus" onclick="onRateClick('${bookId}', 'minus')">-</button>`
@@ -92,10 +75,6 @@ function onReadBook(bookId) {
 
 function onCloseModal() {
     document.querySelector('.modal').classList.remove('open')
-}
-
-function onSetFilterBy() {
-
 }
 
 function flashMsg(msg) {
@@ -119,13 +98,13 @@ function onSetSortBy(sortName) {
 function onNextPage() {
     nextPage()
     renderBooks()
-    renderPageCouner()
+    renderPageNumber()
 }
 
 function onPrevPage() {
     prevPage()
     renderBooks()
-    renderPageCouner()
+    renderPageNumber()
 }
 
 function onRateClick(bookId, action) {
@@ -139,23 +118,70 @@ function onRateClick(bookId, action) {
 function onKeyUpSearch() {
     setTimeout(() => {
         const searchStr = document.querySelector('.search-Input').value
-        filterBy = setBooksFilter(searchStr)
+        const filterBy = setBooksFilter(searchStr)
+        const lang = getLang()
+
+        setQueryStringParams(filterBy, lang)
         renderBooks()
         document.querySelector('.search-Input').value = searchStr
-
-        const queryStringParams = `?bookName=${filterBy.bookName}`
-        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + queryStringParams
-        window.history.pushState({ path: newUrl }, '', newUrl)
     }, 1500);
 }
 
 function renderFilterByQueryStringParams() {
     const queryStringParams = new URLSearchParams(window.location.search)
     const filterBy = { bookName: queryStringParams.get('bookName') || '' }
-    if (!filterBy.bookName) return
+    const langBy = { appLang: queryStringParams.get('lang') || '' }
 
+    onSetLang(langBy.appLang)
+    if (!filterBy.bookName) return
     setBooksFilter(filterBy.bookName)
 }
 
+function setQueryStringParams(filterBy = '', lang = 'en') {
+    const queryStringParams = `?bookName=${filterBy.bookName}&lang=${lang}`
+    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + queryStringParams
+    window.history.pushState({ path: newUrl }, '', newUrl)
+}
 
+function onSetLang(lang) {
+    var elStatusBar = document.querySelector('.status-bar')
 
+    setLang(lang)
+    if (lang === 'he') {
+        document.body.classList.add('rtl')
+        elStatusBar.classList.add('rtl')
+    } else {
+        document.body.classList.remove('rtl')
+        elStatusBar.classList.remove('rtl')
+    }
+    doTrans()
+}
+
+function addLangBtnEvent() {
+    var elEnglishBtn = document.querySelector('.en')
+    elEnglishBtn.addEventListener('click', addEventEn)
+
+    var elEnglishBtn = document.querySelector('.he')
+    elEnglishBtn.addEventListener('click', addEventHe)
+}
+
+function addEventEn(event) {
+    var lang = 'en'
+    onSetLang(lang)
+    event.preventDefault()
+    const filterBy = getFilterBy()
+    setQueryStringParams(filterBy, lang)
+}
+
+function addEventHe(event) {
+    var lang = 'he'
+    event.preventDefault()
+    onSetLang(lang)
+    const filterBy = getFilterBy()
+    setQueryStringParams(filterBy, lang)
+}
+
+function renderPageNumber() {
+    var elPageNum = document.querySelector('.page-number')
+    elPageNum.innerText = `Page ${getPageNumber()}`
+}

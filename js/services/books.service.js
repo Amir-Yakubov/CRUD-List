@@ -31,45 +31,14 @@ function prevPage() {
     }
 }
 
-function _createBook(bookName, bookPrice = 0) {
-    return {
-        id: makeId(4),
-        bookName,
-        bookPrice: (!bookPrice) ? getRandomIntInclusive(50, 250) : bookPrice,
-        imgUrl: `"IMG/${bookName}.jpg"`,
-        desc: makeLorem(),
-        rate: getRandomIntInclusive(0, 10)
-    }
-}
-
-function _createBooks() {
-    var books = loadFromStorage(STORAGE_KEY)
-
-    if (!books || !books.length) {
-        books = []
-        for (let i = 0; i < gBookNames.length; i++) {
-            var bookName = gBookNames[i]
-            books.push(_createBook(bookName))
-        }
-    }
-
-    gBooks = books
-    _saveBooksToStorage()
-}
-
-function _saveBooksToStorage() {
-    saveToStorage(STORAGE_KEY, gBooks)
-}
-
 function getBooks() {
-    var books = gBooks.filter(book => book.bookName.includes(gFilterBy.bookName))
-
-    var startIdx = gPageIdx * PAGE_SIZE
+    const books = gBooks.filter(book => book.bookName.includes(gFilterBy.bookName))
+    const startIdx = gPageIdx * PAGE_SIZE
     return books.slice(startIdx, startIdx + PAGE_SIZE)
 }
 
 function updateBook(bookId, bookPrice) {
-    const book = gBooks.find(book => book.id === bookId)
+    const book = getBookById(bookId)
     book.bookPrice = bookPrice
     _saveBooksToStorage()
     return book
@@ -103,11 +72,12 @@ function updateBookRating(book, action) {
 
 function setBookSort(sortBy = {}) {
     gPageIdx = 0
-    if (sortBy.rate !== undefined) {
+    if (sortBy.rate) {
         gBooks.sort((c1, c2) => (c1.rate - c2.rate) * sortBy.rate)
         gSortIsOn = !gSortIsOn
-    } else if (sortBy.bookPrice !== undefined) {
-        gBooks.sort((c1, c2) => (c1.bookPrice - c2.bookPrice) * sortBy.bookPrice)
+    } else if (sortBy.bookPrice) {
+        gBooks.sort((c1, c2) => (c1.bookPrice - c2.bookPrice) * sortBy.bookPrice
+        )
         gSortIsOn = !gSortIsOn
     }
 }
@@ -115,4 +85,38 @@ function setBookSort(sortBy = {}) {
 function setBooksFilter(filterBy) {
     gFilterBy.bookName = filterBy
     return gFilterBy
+}
+
+function getFilterBy(){
+    return gFilterBy
+}
+
+function _createBook(bookName, bookPrice = 0) {
+    return {
+        id: makeId(4),
+        bookName,
+        bookPrice: (!bookPrice) ? getRandomIntInclusive(50, 250) : +bookPrice,
+        imgUrl: `"IMG/${bookName}.jpg"`,
+        desc: makeLorem(),
+        rate: getRandomIntInclusive(0, 10)
+    }
+}
+
+function _createBooks() {
+    var books = loadFromStorage(STORAGE_KEY)
+
+    if (!books || !books.length) {
+        books = []
+        for (let i = 0; i < gBookNames.length; i++) {
+            var bookName = gBookNames[i]
+            books.push(_createBook(bookName))
+        }
+    }
+
+    gBooks = books
+    _saveBooksToStorage()
+}
+
+function _saveBooksToStorage() {
+    saveToStorage(STORAGE_KEY, gBooks)
 }

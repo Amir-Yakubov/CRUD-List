@@ -6,6 +6,10 @@ body {
     box-sizing: border-box;
 }
 
+body.rtl {
+    direction: rtl;
+}
+
 h1 {
     font-size: 8vh;
     margin: 10px;
@@ -183,6 +187,10 @@ h5 {
 
 .status-bar {
     text-align: left;
+}
+
+.status-bar.rtl {
+    text-align: right;
 }
 
 .button-84 {

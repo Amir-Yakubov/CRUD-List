@@ -10,10 +10,39 @@
 </head>
 
 <body onload="onInit()">
+    <section class="lang-section">
+        <a class="lang-btn en" href="">English</a><span> - </span>
+        <a class="lang-btn he" href="">Hebrew</a>
+    </section>
+
     <section class="main-container">
-        <h1>Bookshop</h1>
+        <h1 data-trans="title">Book inventory</h1>
         <div class="shadow-box">
-            <section class="books-container"> </section>
+            <section class="books-container">
+                <section class="status-bar">
+                    <button class="new-book-btn" data-trans="add-btn" onclick="onAddBook()">Add book</button>
+                    <input class="search-Input" type="text" data-trans="search" onkeyup="onKeyUpSearch()"
+                        placeHolder="Search book...">
+                    <button class="page-btn" onclick="onPrevPage()">&#60</button><span class="page-number"
+                        data-trans="pagenumber">Page ${getPageNumber()}</span><button class="page-btn"
+                        onclick="onNextPage()">&#62</button>
+                </section>
+
+                <table class="data-table">
+                    <thead>
+                        <tr class="first-row">
+                            <th data-trans="table-id">Id</th>
+                            <th data-trans="table-title" class="title-cell">Title</th>
+                            <th data-trans="table-img">Image</th>
+                            <th class="sorting-cell bookprice" data-trans="table-price"
+                                onclick="onSetSortBy('bookPrice')">Price&#x25BC</th>
+                            <th class="sorting-cell rate" data-trans="table-rate" onclick="onSetSortBy('rate')">
+                                Rate&#x25BC</th>
+                            <th class="long-row" data-trans="table-actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-body">
+            </section>
         </div>
     </section>
 
@@ -21,9 +50,9 @@
         <h3></h3>
         <h4><span></span></h4>
         <div class="rate-box"></div>
-        <h5>Book Description</h5>
+        <h5 data-trans="modal-bookDesc">Book Description</h5>
         <p></p>
-        <button class="close-modal" onclick="onCloseModal()">Close</button>
+        <button class="close-modal" data-trans="modal-close" onclick="onCloseModal()">Close</button>
     </div>
     <div class="user-msg"></div>
 
@@ -31,6 +60,7 @@
     <script src="js/services/storage.service.js"></script>
     <script src="js/services/books.service.js"></script>
     <script src="js/book.controller.js"></script>
+    <script src="js/i18n.service.js"></script>
 </body>
 
 </html>
